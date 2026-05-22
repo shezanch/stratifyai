@@ -35,16 +35,22 @@ while True:
     if website == "Enter a valid website": #Checks validation from tools if website is valid
         print (website)
         continue
+
     elif website == "Website not found":
         print (website)
         continue
+
+    elif website == "Website does not have meaningful information":
+        print (website)
+        continue
+
 
     try:
         response = model.generate_content(website) #Generates a response based on user input
     except ResourceExhausted:
         print ("Api rate limit reached. Try again later")
     except:
-        print ("ApI failed. Try agina later")
+        print ("ApI failed. Try again later")
     else:
         print ("AI:", response.text)
        

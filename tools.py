@@ -18,4 +18,11 @@ def web_catcher (url): #Function to analyze a given website
         
         html = response.text #HTML code from downloaded page
         soup = BeautifulSoup(html, "html.parser") #understands HTML like a webpage structure
-        return soup.text #returns value of soup
+        
+        text = soup.text.strip()
+        count_char = len(text)
+        if text == "":
+            return "Website appears to be blank"
+        elif count_char <= 200:
+            return "Website does not have meaningful information"
+        return text #returns value of soup
