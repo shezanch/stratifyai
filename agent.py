@@ -2,7 +2,7 @@
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv #Reads necessary values from .env (in this case API Key)
-from tools import web_catcher
+from tools import *
 from google.api_core.exceptions import ResourceExhausted
 
 
@@ -13,24 +13,30 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY")) #API Key configured once. U
 model = genai.GenerativeModel("gemini-2.5-flash") #Specifies which model of gemini api to use
 
 while True:
+    print ("================================ Welcome to your personal AI Agent ================================")
 
-    user = input("Enter website to analyze: ") #Takes input from user
-    user = user.strip()
+    print ("1. Enter Url")
+    print ("2. Enter niche")
+
     
-#Input Validations
-    if user == "": #Did the user type anything at all
-        print ("You must enter a website")
-        continue
+    menuOption = input ("Enter menu option: ")
+    
+    if menuOption == "1":
+        url = get_user_input()
+        website = web_catcher(url)
 
-    elif user == "quit": #If user quits this breaks the loop
+    
+    elif menuOption == "2":
+        print ("Feature still under development")
+        continue
+    
+    elif menuOption == "quit":
         break
-    
-    elif not user.startswith("http://") and not user.startswith("https://"): #Does it look like a URL?
-        print ("You must enter a valid website starting with http:// or https://")
+
+    else:
+        print ("Invalid menu option")
         continue
 
-    
-    website = web_catcher(user) #Calls the function and provides the URL value
 
     if website == "Enter a valid website": #Checks validation from tools if website is valid
         print (website)

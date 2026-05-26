@@ -3,6 +3,26 @@ import requests
 from bs4 import BeautifulSoup
 
 
+def get_user_input():
+    while True:
+
+        user = input("Enter website to analyze: ") #Takes input from user
+        user = user.strip()
+        
+    #Input Validations
+        if user == "": #Did the user type anything at all
+            print ("You must enter a website")
+            continue
+        
+        elif not user.startswith("http://") and not user.startswith("https://"): #Does it look like a URL?
+            print ("You must enter a valid website starting with http:// or https://")
+            continue
+
+        return user
+
+
+        
+     
 def web_catcher (url): #Function to analyze a given website
 
     try:
@@ -18,11 +38,30 @@ def web_catcher (url): #Function to analyze a given website
         
         html = response.text #HTML code from downloaded page
         soup = BeautifulSoup(html, "html.parser") #understands HTML like a webpage structure
-        
-        text = soup.text.strip()
-        count_char = len(text)
-        if text == "":
+
+        cleaner = web_cleaner(soup)
+
+        count_char = len(cleaner)
+        if cleaner == "":
             return "Website appears to be blank"
         elif count_char <= 200:
             return "Website does not have meaningful information"
-        return text #returns value of soup
+        return cleaner #returns value of soup
+    
+def web_cleaner(soup):
+        for tag in soup (["script","style","nav","footer","header","aside","form","button"]):
+            tag.decompose()
+        
+        cleaned_text = soup.get_text(separator="\n") #extracts all visible text and separates sections with new lines
+
+        lines = cleaned_text.splitlines() #splits the big text block into individual lines
+
+        cleaned_lines = [] #creates an empty set 
+        for x in lines:
+             x = x.strip() # removes extra spaces from the start and end of the line
+             word_count = len(x.split()) # counts how many words are in this line
+             if word_count > 3:
+                  cleaned_lines.append(x) 
+
+        final_text = "\n".join(cleaned_lines)
+        return final_text
