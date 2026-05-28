@@ -25,6 +25,7 @@ while True:
         url = get_user_input()
         website = web_catcher(url)
 
+
     
     elif menuOption == "2":
         print ("Feature still under development")
@@ -42,17 +43,37 @@ while True:
         print (website)
         continue
 
-    elif website == "Website not found":
-        print (website)
-        continue
+
 
     elif website == "Website does not have meaningful information":
         print (website)
         continue
+    elif website == "Website appears to be blank":
+        print (website)
+        continue
+    elif website == "Website blocked the scraper":
+        print (website)
+        continue
+    elif website == "Website page not found":
+        print (website)
+        continue
+    elif website == "Website server error":
+        print (website)
+        continue
 
+    prompt = f"""You are a social media content strategist.
+    A user has given you the content from a website.
+    Your job is to:
+    1. Summarize what this website/page is about in 2-3 sentences
+    2. Identify 3 content ideas inspired by this page that would perform well on social media
+    3. For each idea write a short caption and 5 hashtags
+
+    Website text:
+    {website}
+    """
 
     try:
-        response = model.generate_content(website) #Generates a response based on user input
+        response = model.generate_content(prompt) #Generates a response based on user input
     except ResourceExhausted:
         print ("Api rate limit reached. Try again later")
     except:

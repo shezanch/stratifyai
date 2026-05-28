@@ -33,20 +33,22 @@ def web_catcher (url): #Function to analyze a given website
         return "Enter a valid website"
     
     else: 
-        if response.status_code != 200:
-            return "Website not found"
+        if response.status_code == 403:
+            return "Website blocked the scraper"
+        elif response.status_code == 404:
+             return "Website page not found"
+        elif response.status_code == 500:
+             return "Website server error"
+        elif response.status_code == 200:
         
-        html = response.text #HTML code from downloaded page
-        soup = BeautifulSoup(html, "html.parser") #understands HTML like a webpage structure
+            html = response.text #HTML code from downloaded page
+            soup = BeautifulSoup(html, "html.parser") #understands HTML like a webpage structure
+            
+            cleaner = web_cleaner(soup)
 
-        cleaner = web_cleaner(soup)
+            content = validate_content(cleaner)
+            return content
 
-        count_char = len(cleaner)
-        if cleaner == "":
-            return "Website appears to be blank"
-        elif count_char <= 200:
-            return "Website does not have meaningful information"
-        return cleaner #returns value of soup
     
 def web_cleaner(soup):
         for tag in soup (["script","style","nav","footer","header","aside","form","button"]):
@@ -65,3 +67,12 @@ def web_cleaner(soup):
 
         final_text = "\n".join(cleaned_lines)
         return final_text
+
+def validate_content(cleaner):
+        count_char = len(cleaner)
+        if cleaner.strip() == "":
+            return "Website appears to be blank"
+        elif count_char <= 200:
+            return "Website does not have meaningful information"
+        return cleaner #returns value of soup
+
