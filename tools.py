@@ -2,7 +2,7 @@
 import requests 
 from bs4 import BeautifulSoup
 
-
+#Menu Option 1
 def get_user_input():
     while True:
 
@@ -20,7 +20,18 @@ def get_user_input():
 
         return user
 
+#Menu option 2
+def get_niche_input():
+     while True:
+          user_niche = input("Enter a niche: ")
+          user_niche = user_niche.strip()
 
+          #Input validations
+          if user_niche == "":
+               print("You must enter a niche")
+               continue
+          else:
+            return user_niche
         
      
 def web_catcher (url): #Function to analyze a given website
@@ -33,13 +44,11 @@ def web_catcher (url): #Function to analyze a given website
         return "Enter a valid website"
     
     else: 
-        if response.status_code == 403:
-            return "Website blocked the scraper"
-        elif response.status_code == 404:
-             return "Website page not found"
-        elif response.status_code == 500:
-             return "Website server error"
-        elif response.status_code == 200:
+        errors = { 403: "Website blocked the scraper",
+                  404: "Website page not found",
+                  500: "Website server error"}
+        
+        if response.status_code == 200:
         
             html = response.text #HTML code from downloaded page
             soup = BeautifulSoup(html, "html.parser") #understands HTML like a webpage structure
@@ -48,6 +57,11 @@ def web_catcher (url): #Function to analyze a given website
 
             content = validate_content(cleaner)
             return content
+        
+        elif errors.get(response.status_code):
+             return errors.get(response.status_code)
+        else:
+             return "Website returned unexpected status code"
 
     
 def web_cleaner(soup):
@@ -76,3 +90,5 @@ def validate_content(cleaner):
             return "Website does not have meaningful information"
         return cleaner #returns value of soup
 
+#def get_trending_topics():
+     #Build prompt for generating trending topics

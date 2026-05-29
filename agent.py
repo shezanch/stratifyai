@@ -13,23 +13,28 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY")) #API Key configured once. U
 model = genai.GenerativeModel("gemini-2.5-flash") #Specifies which model of gemini api to use
 
 while True:
-    print ("================================ Welcome to your personal AI Agent ================================")
+    print ("================================ Welcome to StratifyAI ================================")
 
     print ("1. Enter Url")
     print ("2. Enter niche")
 
     
     menuOption = input ("Enter menu option: ")
+
+    error_messages = [ "Enter a valid website",
+                    "Website does not have meaningful information",
+                    "Website appears to be blank",
+                    "Website blocked the scraper",
+                    "Website page not found",
+                    "Website server error"]
     
     if menuOption == "1":
         url = get_user_input()
         website = web_catcher(url)
 
-
-    
     elif menuOption == "2":
-        print ("Feature still under development")
-        continue
+        niche = get_niche_input()
+
     
     elif menuOption == "quit":
         break
@@ -37,28 +42,9 @@ while True:
     else:
         print ("Invalid menu option")
         continue
-
-
-    if website == "Enter a valid website": #Checks validation from tools if website is valid
-        print (website)
-        continue
-
-
-
-    elif website == "Website does not have meaningful information":
-        print (website)
-        continue
-    elif website == "Website appears to be blank":
-        print (website)
-        continue
-    elif website == "Website blocked the scraper":
-        print (website)
-        continue
-    elif website == "Website page not found":
-        print (website)
-        continue
-    elif website == "Website server error":
-        print (website)
+    
+    if website in error_messages:
+        print(website)
         continue
 
     prompt = f"""You are a social media content strategist.
@@ -72,8 +58,19 @@ while True:
     {website}
     """
 
+    niche_prompt = f"""You are a social media content strategist.
+    A user has given you the niche.
+    Your job is to:
+    1. Summarize the current trending topics sentences
+
+    Niche text:
+    {niche}"""
+
     try:
-        response = model.generate_content(prompt) #Generates a response based on user input
+        if menuOption == 1:
+            response = model.generate_content(prompt) #Generates a response based on user input
+        elif menuOption == 2:
+            response = model.generate_content(niche_prompt)
     except ResourceExhausted:
         print ("Api rate limit reached. Try again later")
     except:
