@@ -21,7 +21,7 @@ def get_user_input():
         return user
 
 #Menu option 2
-def get_niche_input():
+def get_niche_input(): #Gets niche entered by user
      while True:
           user_niche = input("Enter a niche: ")
           user_niche = user_niche.strip()
@@ -64,7 +64,7 @@ def web_catcher (url): #Function to analyze a given website
              return "Website returned unexpected status code"
 
     
-def web_cleaner(soup):
+def web_cleaner(soup): #Website content cleaner
         for tag in soup (["script","style","nav","footer","header","aside","form","button"]):
             tag.decompose()
         
@@ -82,7 +82,7 @@ def web_cleaner(soup):
         final_text = "\n".join(cleaned_lines)
         return final_text
 
-def validate_content(cleaner):
+def validate_content(cleaner): #website validation function
         count_char = len(cleaner)
         if cleaner.strip() == "":
             return "Website appears to be blank"
@@ -90,5 +90,7 @@ def validate_content(cleaner):
             return "Website does not have meaningful information"
         return cleaner #returns value of soup
 
-#def get_trending_topics():
-     #Build prompt for generating trending topics
+# def get_trending_topics(niche):
+#       niche.replace(" ", "+")
+#       print (niche)
+           
