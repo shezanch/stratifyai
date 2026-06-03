@@ -30,7 +30,8 @@ while True:
                 "Website appears to be blank",
                 "Website blocked the scraper",
                 "Website page not found",
-                "Website server error"]
+                "Website server error",
+                "Website returned unexpected status code"]
         if website in error_messages:
             print(website)
             continue
@@ -48,13 +49,33 @@ while True:
 
     elif menuOption == "2":
         niche = get_niche_input()
-        niche_prompt = f"""You are a social media content strategist.
-        A user has given you the niche.
-        Your job is to:
-        1. Summarize the current trending topics in sentences
+        topics = get_trending_topics(niche)
 
-        Niche text:
-        {niche}"""
+        error_messages = [ "Google News blocked the scraper",
+                "Google News page not found",
+                "Google News server error",
+                "Google News returned unexpected status code"]
+        if topics in error_messages:
+            print(topics)
+            continue
+        elif topics == []:
+            print ("No trending topics found")
+            continue
+
+        niche_prompt = f"""You are a social media content strategist.
+
+        The user's niche is:
+        {niche}
+
+        Here are recent Google News headlines related to that niche:
+        {topics}
+
+        Use these headlines to generate:
+        1. A short trend summary
+        2. Five content ideas
+        3. A 7-day content calendar
+        4. Captions and hashtags
+        """
 
     
     elif menuOption == "quit":
