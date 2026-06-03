@@ -38,7 +38,7 @@ def web_catcher (url): #Function to analyze a given website
 
     try:
 
-        response = requests.get(url) #goes to the webpage and downloads it 
+        response = requests.get(url, timeout=10) #goes to the webpage and downloads it 
     
     except:
         return "Enter a valid website"
@@ -93,28 +93,31 @@ def validate_content(cleaner): #website validation function
 def get_trending_topics(niche):
     cleaned_niche = niche.replace(" ", "+")
     google_url = f"""https://news.google.com/rss/search?q={cleaned_niche}&hl=en-US&gl=US&ceid=US:en"""
-
-    niche_response = requests.get(google_url)
-    errors = { 403: "Google News blocked the scraper",
-              404: "Google News page not found",
-            500: "Google News server error"}
-    if niche_response.status_code == 200:
-        niche_xml = niche_response.text
-        soup = BeautifulSoup(niche_xml, "xml")
-
-        titles = []
-        items = soup.find_all("item")
-        for item in items:
-            headline = item.find("title")
-            if headline is not None: 
-                headline_text = headline.text
-                titles.append(headline_text)
-
-        return titles[:10]
-    
-    elif errors.get(niche_response.status_code):
-         return errors.get(niche_response.status_code)
+    try:
+        niche_response = requests.get(google_url, timeout=10)
+    except:
+        return "Google blocked your request"
     else:
-         return "Google News returned unexpected status code"
+        errors = { 403: "Google News blocked the scraper",
+                404: "Google News page not found",
+                500: "Google News server error"}
+        if niche_response.status_code == 200:
+            niche_xml = niche_response.text
+            soup = BeautifulSoup(niche_xml, "xml")
+
+            titles = []
+            items = soup.find_all("item")
+            for item in items:
+                headline = item.find("title")
+                if headline is not None: 
+                    headline_text = headline.text
+                    titles.append(headline_text)
+
+            return titles[:10]
+        
+        elif errors.get(niche_response.status_code):
+            return errors.get(niche_response.status_code)
+        else:
+            return "Google News returned unexpected status code"
 
 
