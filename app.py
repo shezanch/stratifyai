@@ -1,5 +1,25 @@
 import streamlit as st
 from tools import *
+import pandas as pd
+
+#Session States
+if 'generated_strategy' not in st.session_state:
+    st.session_state.generated_strategy = None
+
+if 'mode_result' not in st.session_state:
+    st.session_state.mode_result = None
+
+if 'platform_result' not in st.session_state:
+    st.session_state.platform_result = None
+
+if 'voice_result' not in st.session_state:
+    st.session_state.voice_result = None
+
+if 'days_result' not in st.session_state:
+    st.session_state.days_result = None
+
+if 'trend_headlines' not in st.session_state:
+    st.session_state.trend_headlines = None
 
 #Error messages
 gemini_errors_messages = ["The AI usage limit has been reached. Please try again later",
@@ -31,6 +51,7 @@ niche_error_messages = ["Google News took too long to respond",
 "Google News page not found",
 "Google News server error",
 "Google News returned unexpected status code"]
+
 
 #Zen dots font 
 st.markdown(
@@ -75,6 +96,7 @@ st.markdown ("""<h1 style="font-family: 'Zen Dots', sans-serif; font-size: 60px;
 
 #What do you want to analyze?
 st.markdown ("""
+             <br>
              <p style="font-family: tektur; font-size: 30px; text-align: center; font-weight: 600;" >
                 What do you want to analyze?
              </p>
@@ -84,53 +106,72 @@ st.markdown ("""
 #creation of background card for form
 with st.container(border=True):
 
-    mode = st.selectbox("Select mode", ("URL", "Niche"), index=None, placeholder="Choose analysis mode")
+    mode = st.selectbox("Analysis Mode", ("Website URL", "Niche"), index=None, placeholder="Select what you want to analyze")
 
 #URL Page
-    if mode == "URL":
+    if mode == "Website URL":
         url_input = st.text_input("Enter website URL to analyze", placeholder="https://example.com")
         url = url_input.strip()
-        generate_url = st.button("Generate analysis", type = "primary", width="stretch")
+        platform_radio = st.selectbox("Platform", ("Linkedin", "TikTok", "Instagram"), placeholder="Choose a platform", index=None)
+
+        tone_radio = st.selectbox("Voice", ("Casual","Professional", "Funny"), index=None, placeholder="Choose a tone")
+ 
+        days_slider = st.select_slider("Posts Planned", (3,4,5,6,7,8,9,10,11,14))
+
+        generate_url = st.button("Generate Strategy", type = "primary", width="stretch")
         if generate_url:
             if url == "":
                 st.warning("Please enter a URL")
             elif not url.startswith("http://") and not url.startswith("https://"):
                 st.warning("You must enter a valid website starting with http:// or https://")
+            elif platform_radio == None:
+                st.warning("Please choose a platform.", )
+            elif tone_radio == None:
+                st.warning("Please choose a tone.")
             else:
                 website = web_catcher(url)
                 if website in url_error_messages:
                     st.error(website, icon="🚨")
                 else:
+
                     with st.spinner ("Analyzing the website and generating content ideas...", show_time=True):
-                        result_url = get_url_strategy(website)
+                        result_url = get_url_strategy(website, platform_radio, tone_radio, days_slider)
                         if result_url in gemini_errors_messages:
                             st.error(result_url, icon="🚨")
                         else:
-                            st.write(result_url)
+                            st.session_state.generated_strategy = result_url
+                            st.session_state.mode_result = "Website URL"
+                            st.session_state.platform_result = platform_radio
+                            st.session_state.voice_result = tone_radio
+                            st.session_state.days_result = days_slider
+        if (st.session_state.generated_strategy is not None and st.session_state.mode_result == mode):
+            with st.container(border=True):
+                st.header("Last Generated Strategy")
+                col1, col2, col3 = st.columns(3)
+                col1.metric("Platform", st.session_state.platform_result)
+                col2.metric("Voice", st.session_state.voice_result)
+                col3.metric("Posts Planned", st.session_state.days_result)
+                st.markdown(st.session_state.generated_strategy)
+                #Download strategy as text file
+                st.download_button(label="Download Strategy", data=st.session_state.generated_strategy,
+                                file_name="stratifyai_website_strategy.txt",
+                                icon = ":material/download:")
 
 #Niche Page
     elif mode == "Niche":
-        niche_input = st.text_input("Enter niche", placeholder="Example: fitness for college students")
+        niche_input = st.text_input("Enter Your Niche", placeholder="Example: fitness for college students")
         niche = niche_input.strip()
 
         platform_radio = st.selectbox("Platform", ("Linkedin", "TikTok", "Instagram"), placeholder="Choose a platform", index=None)
 
-        tone_radio = st.selectbox("Tone", ("Casual","Professional", "Funny"), index=None, placeholder="Choose a tone")
+        tone_radio = st.selectbox("Voice", ("Casual","Professional", "Funny"), index=None, placeholder="Choose a tone")
  
-        days_slider = st.select_slider("Days Of Content", (3,4,5,6,7,8,9,10,11,14))
+        days_slider = st.select_slider("Posts Planned", (3,4,5,6,7,8,9,10,11,14))
 
-
-#Niche user selection summary card
-        with st.container(border=True):
-            st.write("Content Settings")
-            st.write("Niche: ", niche)
-            st.write("Platform: ", platform_radio)
-            st.write("Tone: ", tone_radio)
-            st.write("Days of content: ", days_slider)
-            st.write("")
 
 #Generate strategy button
         generate_niche = st.button("Generate Strategy", type="primary", width="stretch")
+        
         if generate_niche:
             if niche == "":
                 st.warning("Please enter a niche.")
@@ -138,7 +179,7 @@ with st.container(border=True):
                 st.warning("Please choose a platform.", )
             elif tone_radio == None:
                 st.warning("Please choose a tone.")
-            
+
             #Try-except to check if api rate limit reached or api failed. prints error message instead of showing error log
             else:
                 topics = get_trending_topics(niche)
@@ -152,11 +193,34 @@ with st.container(border=True):
                         if result_niche in gemini_errors_messages:
                             st.error(result_niche, icon="🚨")
                         else:
-                            st.write(result_niche)
-                        
+                            st.session_state.generated_strategy = result_niche
+                            st.session_state.mode_result = "Niche"
+                            st.session_state.platform_result = platform_radio
+                            st.session_state.voice_result = tone_radio
+                            st.session_state.days_result = days_slider
+                            st.session_state.trend_headlines = topics
+        if (st.session_state.generated_strategy is not None and st.session_state.mode_result == mode):
+            with st.container(border=True):
+                st.header("Last Generated Strategy")
+                col1, col2, col3 = st.columns(3)
+                col1.metric("Platform", st.session_state.platform_result)
+                col2.metric("Voice", st.session_state.voice_result)
+                col3.metric("Posts Planned",  st.session_state.days_result)
+                with st.expander("Trend Sources"):
+                    st.subheader("Relevant Headlines Found")
+                    df = pd.DataFrame(st.session_state.trend_headlines, columns=["Relevant Headlines"])
+                    st.table(df)
+                st.divider()
+                st.markdown(st.session_state.generated_strategy)
+                #Download strategy as text file
+                download_name = niche_input.lower().replace(" ", "_")
+                st.download_button(label="Download Strategy", data=st.session_state.generated_strategy,
+                                    file_name=f"stratifyai_{download_name}.txt",
+                                    icon = ":material/download:")
+    
 
 
-           
+
 
 
 

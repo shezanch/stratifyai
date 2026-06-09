@@ -10,7 +10,7 @@ load_dotenv()
 
 genai.configure(api_key=os.getenv("GEMINI_API_KEY")) #API Key configured once. Uses this api key from .env whenever gemini is called
 
-model = genai.GenerativeModel("gemini-3-flash-preview") #Specifies which model of gemini api to use
+model = genai.GenerativeModel("gemini-2.5-flash") #Specifies which model of gemini api to use
 
 #Menu Option 1
 def get_user_input():
@@ -190,16 +190,65 @@ def get_trending_topics(niche):
             return "Google News returned unexpected status code"
         
         
-def get_url_strategy(website):
+def get_url_strategy(website, platform, tone, day_numbers):
         prompt = f"""You are a social media content strategist.
-        A user has given you the content from a website.
-        Your job is to:
-        1. Summarize what this website/page is about in 2-3 sentences
-        2. Identify 3 content ideas inspired by this page that would perform well on social media
-        3. For each idea write a short caption and 5 hashtags
 
-        Website text:
+        The user is creating content for: {platform}
+        Tone: {tone}
+        Number of posts: {day_numbers}
+
+        You have been given text scraped from a webpage:
+
         {website}
+
+        First, identify the main topic and purpose of the webpage.
+
+        Only use information that is clearly and directly supported by the webpage content. 
+        Ignore unrelated navigation text, repeated phrases, advertisements, boilerplate, 
+        or weakly connected details. Do not invent facts or force unrelated parts of the 
+        page into the strategy.
+
+        Create a content strategy using the exact Markdown structure below.
+
+        ## Page Summary
+
+        Write a concise 2–3 sentence summary explaining what the webpage is about and what 
+        its main message or value is.
+
+        ---
+
+        For each content day, use this exact format:
+
+        ## Day 1
+
+        **Hook:**
+        Write one punchy, attention-grabbing opening line inspired directly by the webpage.
+
+        **Caption:**
+        Write a complete caption designed specifically for {platform}, using a {tone} tone.
+
+        **Hashtags:**
+        Provide exactly 5 relevant hashtags on one line.
+
+        ---
+
+        Continue this same structure for exactly {day_numbers} days.
+
+        Requirements:
+
+        * Base every post on the webpage’s actual content.
+        * Ignore any scraped text that is irrelevant, duplicated, promotional, or unrelated to the page’s main topic.
+        * Do not invent details that are not present in the webpage.
+        * Keep every day clearly separated with `---`.
+        * Put each label on its own line.
+        * Use `## Day X` as the heading for every day.
+        * Make every content idea distinct.
+        * Avoid repeating hooks, captions, or topics.
+        * Keep the writing appropriate for {platform}.
+        * Use exactly 5 hashtags per day.
+        * Do not include an introduction, conclusion, disclaimer, or filler.
+        * Return only the formatted strategy.
+
         """
         try:
             response = model.generate_content(prompt)
@@ -230,12 +279,60 @@ def get_url_strategy(website):
             return response.text
 
 def get_niche_strategy(topics, niche, platform, tone, day_numbers):
-    niche_prompt = f"""You are a social media content strategist. The user's niche is {niche} and they are creating content for {platform} with a {tone} tone. 
-    Here are the current trending headlines in this niche: {topics}. 
-    Using these trends as inspiration, generate the following: first a trend summary in 2-3 sentences explaining what is happening in this niche right now, 
-    then a {day_numbers}-day content calendar. For each day provide the day number as a header, a punchy one-line post hook, a full caption written specifically for 
-    {platform} in a {tone} tone, and exactly 5 relevant hashtags. Keep each day clearly separated. Do not add any filler, introductions, or closing remarks — 
-    just the structured output.
+    niche_prompt = f"""You are a social media content strategist.
+
+    The user’s niche is: {niche}
+    Platform: {platform}
+    Tone: {tone}
+    Number of posts: {day_numbers}
+
+    Here are current trending headlines related to the niche:
+
+    {topics}
+
+    Only use headlines that are clearly and directly relevant to the user’s niche. 
+    Ignore unrelated, weakly connected, or off-topic headlines. Do not force separate topics 
+    together just because they appeared in the search results. If only a few headlines are 
+    relevant, use only those headlines.
+
+    Create a content strategy using the exact Markdown structure below.
+
+    ## Trend Summary
+
+    Write a concise 2–3 sentence summary explaining the most relevant trends currently 
+    affecting this niche.
+
+    ---
+
+    For each content day, use this exact format:
+
+    ## Day 1
+
+    **Hook:**
+    Write one punchy, attention-grabbing opening line.
+
+    **Caption:**
+    Write a complete caption designed specifically for {platform}, using a {tone} tone.
+
+    **Hashtags:**
+    Provide exactly 5 relevant hashtags on one line.
+
+    ---
+
+    Continue this same structure for exactly {day_numbers} days.
+
+    Requirements:
+
+    * Keep every day clearly separated with `---`.
+    * Put each label on its own line.
+    * Use `## Day X` as the heading for every day.
+    * Make every content idea distinct.
+    * Avoid repeating hooks, captions, or topics.
+    * Keep the writing appropriate for {platform}.
+    * Use exactly 5 hashtags per day.
+    * Do not include an introduction, conclusion, disclaimer, or filler.
+    * Return only the formatted strategy.
+
     """
     try:
         response = model.generate_content(niche_prompt)
