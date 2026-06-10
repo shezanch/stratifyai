@@ -86,7 +86,7 @@ st.markdown(
 
 #Header and tagline
 st.markdown ("""<h1 style="font-family: 'Zen Dots', sans-serif; font-size: 60px;  text-align: center" >
-                Stratify<span style="color:#6FFF6F;">AI</span>
+                Stratify<span style="color:#1db954;">AI</span>
                 </h1>
                 <p style="font-family: 'Tektur', sans-serif; font-size: 26px; font-weight:500; text-align: center" >
                     Find <span style="color: #FB7185;">trending</span> topics. Generate smarter <span style="color: #3A75D2;">content ideas</span>
@@ -218,8 +218,6 @@ with st.container(border=True):
                                     file_name=f"stratifyai_{download_name}.txt",
                                     icon = ":material/download:")
     
-
-
 
 
 
