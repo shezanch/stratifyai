@@ -85,7 +85,7 @@ st.markdown(
 )
 
 #Header and tagline
-st.markdown ("""<h1 style="font-family: 'Zen Dots', sans-serif; font-size: 60px;  text-align: center" >
+st.markdown ("""<h1 style="font-family: 'Zen Dots', sans-serif; font-size: 55px;  text-align: center" >
                 Stratify<span style="color:#1db954;">AI</span>
                 </h1>
                 <p style="font-family: 'Tektur', sans-serif; font-size: 26px; font-weight:500; text-align: center" >
